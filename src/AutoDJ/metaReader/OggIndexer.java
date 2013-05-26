@@ -169,6 +169,7 @@ public class OggIndexer extends AudioFileIndexer {
 	 * 
 	 * @throws Exception
 	 */
+	@SuppressWarnings("unused")
 	protected void readOggHeader() throws Exception {
 		byte[] header = new byte[27];
 		raf.readFully(header);
@@ -197,7 +198,8 @@ public class OggIndexer extends AudioFileIndexer {
 		int totalLength = 0;
 		
 		for (int i = 0; i < pageSegments; i++) {
-			int l=0; byte[] tmp = new byte[1];
+			int l=0; 
+			byte[] tmp = new byte[1];
 			raf.read(tmp);
 			l=tmp[0]&0xff;
 			totalLength += l;
@@ -274,6 +276,7 @@ public class OggIndexer extends AudioFileIndexer {
 	 * @param String pictureBlock (base64)
 	 * @return BufferedImage
 	 */
+	@SuppressWarnings("unused")
 	BufferedImage readAlbumImage(String pictureBlock) {
 		if( pictureBlock == null || pictureBlock.isEmpty() ) 
 			return null;
@@ -281,7 +284,7 @@ public class OggIndexer extends AudioFileIndexer {
 		byte[] pictureBytes = Base64.decodeBase64(pictureBlock);
 		BufferedImage img = null;
 		
-		String mimeString = "", description = "";
+		String mimeString = ""; String description = "";
 		ByteBuffer picBuff = ByteBuffer.allocate(pictureBytes.length);
 		picBuff.put(pictureBytes);
 		picBuff.rewind();

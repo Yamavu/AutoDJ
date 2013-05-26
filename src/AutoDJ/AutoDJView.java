@@ -27,6 +27,7 @@ import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.List;
 import java.util.Observable;
 import java.util.Observer;
 
@@ -69,7 +70,7 @@ public class AutoDJView extends Observable implements Observer {
 			/**
 			 * A SongJList displaying the current playlist.
 			 */
-			private JList playlistList;
+			private JList<Song> playlistList;
 			/**
 			 * A text field to enter a search string for the song library.
 			 */
@@ -77,7 +78,7 @@ public class AutoDJView extends Observable implements Observer {
 			/**
 			 * A SongJList displaying the current library search results.
 			 */
-			private JList libraryList;
+			private JList<Song> libraryList;
 	
 		/**
 		 * The second panel which displays the cover art, if available.
@@ -143,6 +144,11 @@ public class AutoDJView extends Observable implements Observer {
 		c.insets=new Insets(10,10,10,10);
 		c.gridx=0;
 		c.gridy=0;
+		playButton.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				notifyObservers(new ObserverMessage(ObserverMessage.PLAY));
+			}
+		});
 		playerPanel.add(playButton, c);
 		
 		JProgressBar progressBar = new JProgressBar();
@@ -161,6 +167,11 @@ public class AutoDJView extends Observable implements Observer {
 		c.insets=new Insets(10,10,10,10);
 		c.gridx=2;
 		c.gridy=0;
+		playButton.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				notifyObservers(new ObserverMessage(ObserverMessage.NEXT_SONG));
+			}
+		});
 		playerPanel.add(nextSongButton, c);
 	}
 	
@@ -178,7 +189,7 @@ public class AutoDJView extends Observable implements Observer {
 		leftConstraints.gridy = 0;
 		leftConstraints.insets=new Insets(5,5,5,5);
 		mainPanel.add(playListLabel, leftConstraints);
-		playlistList = new JList();
+		playlistList = new JList<Song>();
 		playlistList.setCellRenderer(new SongListRenderer());
 		playlistList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 		JScrollPane playlistScrollpane = new JScrollPane (playlistList);
@@ -259,7 +270,7 @@ public class AutoDJView extends Observable implements Observer {
 		rightConstraints.weightx = 0.5;
 		rightConstraints.gridy = 1;
 		mainPanel.add(librarySearchField, rightConstraints);
-		libraryList = new JList();
+		libraryList = new JList<Song>();
 		libraryList.setCellRenderer(new SongListRenderer());
 		JScrollPane libraryScrollpane = new JScrollPane (libraryList);
 		libraryScrollpane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
@@ -377,8 +388,8 @@ public class AutoDJView extends Observable implements Observer {
 	 * Returns the current selected values of the playlist.
 	 * @return the current selected values of the playlist.
 	 */
-	public Song[] getSelectedPlaylistSongs() {
-		return convertObjectArrayToSongArray(playlistList.getSelectedValues());
+	public List<Song> getSelectedPlaylistSongs() {
+		return playlistList.getSelectedValuesList();
 	}
 	
 	/**
@@ -401,22 +412,23 @@ public class AutoDJView extends Observable implements Observer {
 	 * Returns the current selected values of the library.
 	 * @return the current selected values of the library.
 	 */
-	public Song[] getSelectedLibrarySongs() {
-		return convertObjectArrayToSongArray(libraryList.getSelectedValues());
+	public List<Song> getSelectedLibrarySongs() {
+		return libraryList.getSelectedValuesList();
 	}
 	
-	/**
+	
+	/*
 	 * Convert an Object-array to a Song-array
 	 * @param objects[] the array of Objects to be converted
 	 * @return a Song-array
 	 */
-	private Song[] convertObjectArrayToSongArray(Object[] objects) {
+	/*private Song[] convertObjectArrayToSongArray(Object[] objects) {
 		Song[] songs = new Song[objects.length];
 		for (int i=0; i<objects.length; i++) {
 			songs[i] = (Song) objects[i];
 		}
 		return songs;
-	}
+	}*/
 	
 	/**
 	 * Updates this object if changes in an other object occurs. At the moment

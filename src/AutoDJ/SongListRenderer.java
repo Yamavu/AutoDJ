@@ -34,7 +34,7 @@ import javax.swing.ListCellRenderer;
  */
 
 @SuppressWarnings("serial")
-public class SongListRenderer extends JLabel implements ListCellRenderer {
+public class SongListRenderer extends JLabel implements ListCellRenderer<Song> {
 	
 	/**
 	 * Creates a new SongListRenderer object.
@@ -44,7 +44,7 @@ public class SongListRenderer extends JLabel implements ListCellRenderer {
 	}
 
     @Override
-    public Component getListCellRendererComponent(JList list, Object value,
+    public Component getListCellRendererComponent(JList<? extends Song> list, Song value,
 			int index, boolean isSelected, boolean cellHasFocus) {
 		
     	// get the colors from the JList we "work for"

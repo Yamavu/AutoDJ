@@ -32,6 +32,7 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 
 import AutoDJ.prefs.Settings;
+import AutoDJ.wizard.Wizard;
 import AutoDJ.wizard.WizardPanel;
 
 /**
@@ -99,7 +100,7 @@ public class Folder extends WizardPanel implements ActionListener {
 		c.insets = new Insets(0,0,0,0);
 
 		// add final text to layout
-		JLabel continueText = new JLabel("<html>When you are finished, click 'next' to continue.</html>");
+		JLabel continueText = new JLabel("<html>When you are finished, click '"+Wizard.NEXT_TEXT+"' to continue.</html>");
 		c.gridy = 4;
 		panel.add(continueText, c);
 		

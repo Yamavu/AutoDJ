@@ -31,10 +31,10 @@ import java.io.InputStream;
 import java.math.BigInteger;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import org.jaudiotagger.audio.mp3.MP3File;
+/*import org.jaudiotagger.audio.mp3.MP3File;
 import org.jaudiotagger.tag.datatype.Artwork;
 import org.jaudiotagger.tag.id3.AbstractID3v2Tag;
-import org.jaudiotagger.tag.id3.ID3v24Frames;
+import org.jaudiotagger.tag.id3.ID3v24Frames;*/
 
 import AutoDJ.metaReader.AudioFileIndexer;
 
@@ -149,7 +149,7 @@ public class Song {
 	 * calculate a MD5sum of a given file
 	 * @param file the file to calculate the md5sum from.
 	 */
-	private String calculateMD5(File file) throws NoSuchAlgorithmException, FileNotFoundException {
+	public static String calculateMD5(File file) throws NoSuchAlgorithmException, FileNotFoundException {
 		MessageDigest digest = MessageDigest.getInstance("MD5");
 		InputStream is = new FileInputStream(file);				
 		byte[] buffer = new byte[8192];

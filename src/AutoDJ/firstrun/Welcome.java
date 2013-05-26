@@ -26,6 +26,7 @@ import java.awt.GridBagLayout;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 
+import AutoDJ.wizard.Wizard;
 import AutoDJ.wizard.WizardPanel;
 
 /**
@@ -62,7 +63,7 @@ public class Welcome extends WizardPanel {
 		JLabel welcomeText = new JLabel("<html>You appear to be using AutoDJ for the first time.<br><br>" +
 				"This short wizard will take you through the initial steps <br>" +
 				"to get this program working for your setup.<br><br>" +
-				"Click 'next' to continue.</html>");
+				"Click '"+Wizard.NEXT_TEXT+"' to continue.</html>");
 		c.anchor = GridBagConstraints.LINE_START;
 		c.gridx = 1;
 		c.gridy = 1;

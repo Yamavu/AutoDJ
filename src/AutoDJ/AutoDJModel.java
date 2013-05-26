@@ -21,6 +21,7 @@
 package AutoDJ;
 
 import java.util.Arrays;
+import java.util.List;
 import java.util.Observable;
 import java.util.Vector;
 
@@ -69,6 +70,9 @@ public class AutoDJModel extends Observable {
 	public Vector<Song> getPlaylist () {
 		return this.playlist;
 	}
+	
+	
+	
 	
 	/**
 	 * Returns the log message to be displayed in the log window of AutoDJView.
@@ -120,10 +124,10 @@ public class AutoDJModel extends Observable {
 	
 	/**
 	 * Removes songs from the playlist.
-	 * @param songs The songs to remove from the playlist
+	 * @param list The songs to remove from the playlist
 	 */
-	public void removeFromPlaylist(Song[] songs) {
-		playlist.removeAll(Arrays.asList(songs));
+	public void removeFromPlaylist(List<Song> list) {
+		playlist.removeAll(list);
 		setChanged();
 		notifyObservers(new ObserverMessage(ObserverMessage.PLAYLIST_CHANGED));
 	}

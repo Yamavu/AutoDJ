@@ -118,6 +118,7 @@ public class Mp3Indexer extends AudioFileIndexer {
 	 * 
 	 * @return boolean success
 	 */
+	@SuppressWarnings("unused")
 	protected boolean readID3v2Tag() {
 		byte[] frame = new byte[4];
 		int length;

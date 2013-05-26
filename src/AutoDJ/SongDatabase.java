@@ -55,8 +55,12 @@ public class SongDatabase {
 	
 	private String ADD_SONG_QUERY = "";
 	private String GET_SONG_QUERY = "";
+	@SuppressWarnings("unused")
+	private String GET_SONG_QUERY_EXACT = "";
+	private String GET_SONG_QUERY_FILE = "";
 	private String CHANGE_SONG_QUERY = "";
 	private String CREATE_SONG_TABLE_QUERY = "";
+	
 	
 	/**
 	 * Creates a new SongDatabase instance to work with and checks, if the
@@ -107,8 +111,8 @@ public class SongDatabase {
 	 * @param song The song to be added to the database.
 	 */
 	public void addSong (Song song) {
+		createConnection();
 		try {
-			createConnection();
 			PreparedStatement statement = conn.prepareStatement(ADD_SONG_QUERY);
 			statement.setString(1, song.getArtist());
 			statement.setString(2, song.getTitle());
@@ -120,9 +124,11 @@ public class SongDatabase {
 			statement.setString(8, song.getFile().getAbsolutePath());
 			statement.setString(9, song.getMD5sum());
 			statement.execute();
-			closeConnection();
+			
 		} catch (SQLException ex) {
 	        printDbError(ex, "occured for song " + song.getArtist() + " - " + song.getTitle());
+		} finally{
+			closeConnection();
 		}
 	}
 	
@@ -172,6 +178,45 @@ public class SongDatabase {
 		}
 		return songList;
 	}
+	
+	public Song getSongExactly(String filename){
+		Song song = null;
+		try {
+			createConnection();
+			PreparedStatement statement = conn.prepareStatement(GET_SONG_QUERY_FILE);
+			statement.setString(1, "%"+filename+"%");
+			ResultSet rs = statement.executeQuery();
+			if (rs.isBeforeFirst()) { //if there's a result
+				int id				= rs.getInt("id");
+				String artist 		= rs.getString("artist");
+				String title        = rs.getString("title");
+				int trackno         = rs.getInt("trackno");
+				String album        = rs.getString("album");
+				int year 			= rs.getInt("year");
+				String genre 		= rs.getString("genre");
+				File file_name 		= new File (rs.getString("filename"));
+				String md5sum 		= rs.getString("md5sum");
+				
+				
+				byte[] coverBlob    = rs.getBytes("cover");
+				BufferedImage cover = null;
+				try {
+					cover = ImageIO.read(new ByteArrayInputStream(coverBlob));
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					System.err.println("Exception while reading Cover Image for " + file_name.getName()+" ... continuing happily.");
+					//e.printStackTrace();
+				}
+				
+				song = new Song (id, artist, title, trackno, album,	cover, year, genre, file_name, md5sum);
+			}
+		} catch (SQLException ex) {
+			printDbError(ex);
+		} finally {
+			closeConnection();
+		}
+		return song;
+	}
 
 	/**
 	 * Changes an entry for a song in the database.
@@ -183,8 +228,8 @@ public class SongDatabase {
 	 * @see Song
 	 */
 	public void changeSong(Song oldSong, Song newSong) {
+		createConnection();
 		try {
-			createConnection();
 			PreparedStatement statement = conn.prepareStatement(CHANGE_SONG_QUERY);
 			statement.setString(1, newSong.getArtist());
 			statement.setString(2, newSong.getTitle());
@@ -196,9 +241,10 @@ public class SongDatabase {
 			statement.setString(8, newSong.getMD5sum());
 			statement.setInt(9, oldSong.getId());
 			statement.executeUpdate();
-			closeConnection();
 		} catch (SQLException ex) {
 			printDbError(ex, "occured for song " + newSong.getArtist() + " - " + newSong.getTitle());
+		} finally {
+			closeConnection();
 		}
 	}	
 	
@@ -262,6 +308,12 @@ public class SongDatabase {
 				"SELECT * FROM songs WHERE artist LIKE ? " +
 				"OR title LIKE ? OR album LIKE ? ORDER BY artist, year, trackno, album");
 		mysqlQueries.put(
+				"GET_SONG_QUERY_EXACT",
+				"SELECT * FROM songs WHERE filename = ? AND md5sum = ?");
+		mysqlQueries.put(
+				"GET_SONG_QUERY_FILE",
+				"SELECT * FROM songs WHERE filename = ?");
+		mysqlQueries.put(
 				"CHANGE_SONG_QUERY", 
 				"UPDATE songs SET artist=?, title=?, " +
 				"trackno=?, album=?, cover=?, year=?, filename=?, md5sum=? WHERE id=?");
@@ -295,6 +347,8 @@ public class SongDatabase {
 		
 		ADD_SONG_QUERY = queryPresets.get(dbType).get("ADD_SONG_QUERY");
 		GET_SONG_QUERY = queryPresets.get(dbType).get("GET_SONG_QUERY");
+		GET_SONG_QUERY_EXACT = queryPresets.get(dbType).get("GET_SONG_QUERY_EXACT");
+		GET_SONG_QUERY_FILE = queryPresets.get(dbType).get("GET_SONG_QUERY_FILE");
 		CHANGE_SONG_QUERY = queryPresets.get(dbType).get("CHANGE_SONG_QUERY");
 		CREATE_SONG_TABLE_QUERY = queryPresets.get(dbType).get("CREATE_SONG_TABLE_QUERY");
 	}

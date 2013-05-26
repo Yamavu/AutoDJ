@@ -21,12 +21,20 @@
 package AutoDJ;
 
 import java.io.File;
+import java.io.FileNotFoundException;
+
+import org.apache.commons.io.FileUtils;
+
+import java.security.NoSuchAlgorithmException;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Observable;
 import java.util.Observer;
 import java.util.Vector;
 
-import javax.activation.MimetypesFileTypeMap;
+//import javax.activation.MimetypesFileTypeMap;
 
+import AutoDJ.audioPlayer.PlayerThread;
 import AutoDJ.firstrun.Firstrun;
 import AutoDJ.prefs.Settings;
 import AutoDJ.wizard.Wizard;
@@ -53,6 +61,12 @@ public class AutoDJController implements Observer {
 	 * @see SongDatabase
 	 */
 	private SongDatabase myDatabase;
+	
+	/**
+	 * The Wrapper around MPlayer. All Songs are played through this
+	 * @see PlayerThread
+	 */
+	private PlayerThread myPlayer = new PlayerThread();
 	
 	/**
 	 * Creates a new AutoDJController object which interacts with
@@ -138,7 +152,8 @@ public class AutoDJController implements Observer {
 	 * Rescans the harddisk for all MP3 files and updates the
 	 * song database, if necessary.
 	 */
-	private void rescanDatabase() {
+	//TODO: needs too many system resources, walk through directories and apply logic seperately 
+	/*private void rescanDatabase() {
 		// get all songs from DB
 		Vector<Song> databaseList = new Vector<Song>();
 		databaseList = myDatabase.getSongs("");
@@ -189,9 +204,54 @@ public class AutoDJController implements Observer {
 		for (int i=0; i<songFiles.size(); i++) {
 			myDatabase.addSong(songFiles.elementAt(i));
 		}
+		
 		model.setLogtext("Added "+songFiles.size()+" song(s) to database.");
-	}
+	}*/
 
+	
+	/**
+	 * Rescans the harddisk for all MP3 files and updates the
+	 * song database, if necessary. 
+	 */
+	// TODO: why does this thing abort operation at about 500/3000 songs??
+	private void rescanDatabase2() {
+		
+		int updS = 0, newS = 0;
+		
+		final File mp3Dir=new File(Settings.get("mp3Dir"));
+		String[] fileTypes={"mp3","MP3","mP3","Mp3","ogg","oga"};
+		Iterator<File> fileIter = FileUtils.iterateFiles(mp3Dir, fileTypes, true);
+		try{
+			while (fileIter.hasNext()) {
+				File file = fileIter.next();
+				Song newSong;
+				Song match = myDatabase.getSongExactly(file.getAbsolutePath());
+				if (match!=null){
+					if (!Song.calculateMD5(file).equals(match.getMD5sum())){
+						newSong = new Song(file);
+						myDatabase.changeSong(match, newSong);
+						model.setLogtext("Update Song:");
+						model.setLogtext("DB:   "+match.toString());
+						model.setLogtext("File: "+newSong.toString());
+						updS++;
+					}// else do nothing
+				} else {
+					myDatabase.addSong(new Song(file));
+					newS++;
+				}
+				
+			}
+		}catch (OutOfMemoryError e){
+			System.err.println("Out of Memory. Aborting Scan. Bruised, but happy.");
+		}catch (Exception f){
+			f.printStackTrace();
+		}
+				
+		model.setLogtext("Added "+newS+" song(s) to database.");
+		model.setLogtext("Changed "+updS+" song(s) to database.");
+		
+	}
+	
 	/**
 	 * Recursively gets all MP3 files in a given directory.
 	 * @param file A File object representing the directory we search in.
@@ -200,7 +260,7 @@ public class AutoDJController implements Observer {
 	 * @return A Vector of File objects representing all MP3 files
 	 * we found.
 	 */
-	private static Vector<File> getAllmp3Files(File file, Vector<File> mp3file) {
+	/*private static Vector<File> getAllmp3Files(File file, Vector<File> mp3file) {
 		if (file.isDirectory()) {
 			String[] children = file.list();
 			for (int i=0; i<children.length; i++) {
@@ -221,7 +281,7 @@ public class AutoDJController implements Observer {
 			    mp3file.add(file);
 		}
 		return mp3file;
-	}
+	}*/
 
 	/**
 	 * Query the song database for songs matching the search string
@@ -247,22 +307,26 @@ public class AutoDJController implements Observer {
 		if (msg instanceof ObserverMessage) {
 			ObserverMessage message = (ObserverMessage) msg;
 			if (message.getMessage()==ObserverMessage.PLAY) {
-				//someone told us to play
+				myPlayer.loadSong(model.getPlaylist().firstElement());
+				System.out.println ("PLAY");
 			} else if (message.getMessage()==ObserverMessage.PAUSE) {
-				//someone told us to stop playing
+				System.out.println ("PAUSE");
+			} else if (message.getMessage()==ObserverMessage.NEXT_SONG) {
+				System.out.println ("NEXTSONG");
+				myPlayer.stopPlayback();
 			} else if (message.getMessage()==ObserverMessage.RESCAN_LIBRARY) {
-				rescanDatabase();
+				rescanDatabase2();
 			} else if (message.getMessage()==ObserverMessage.SEARCHTEXT_CHANGED) {
 				filterSongLibrary(((AutoDJView) view).getSearchText());
 			} else if (message.getMessage()==ObserverMessage.ADD_SONG_TO_PLAYLIST) {
-				Song[] selectedSongs=((AutoDJView) view).getSelectedLibrarySongs();
+				List<Song> selectedSongs=((AutoDJView) view).getSelectedLibrarySongs();
 				Vector<Song> playlistSongs=model.getPlaylist();
-				for (int i=0; i<selectedSongs.length; i++) {
-					if (!playlistSongs.contains(selectedSongs[i])) {
-						model.addToPlaylist(selectedSongs[i]);
+				for (Song selectedSong:selectedSongs) {
+					if (!playlistSongs.contains(selectedSong)) {
+						model.addToPlaylist(selectedSong);
 					} else {
-						model.setLogtext("Song " + selectedSongs[i].getArtist() +
-								" - " + selectedSongs[i].getTitle() + " not added" +
+						model.setLogtext("Song " + selectedSong.getArtist() +
+								" - " + selectedSong.getTitle() + " not added" +
 								" to playlist, because it already contains it.");
 					}
 				}

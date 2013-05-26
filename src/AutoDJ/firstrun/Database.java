@@ -44,6 +44,7 @@ import javax.swing.JPanel;
 import javax.swing.JTextField;
 
 import AutoDJ.prefs.Settings;
+import AutoDJ.wizard.Wizard;
 import AutoDJ.wizard.WizardPanel;
 
 /**
@@ -63,7 +64,7 @@ public class Database extends WizardPanel implements ActionListener, FocusListen
 	/**
 	 * gui components
 	 */
-	JComboBox dbTypeDropdown;
+	JComboBox<String> dbTypeDropdown;
 	JPanel dbOptions;
 	JLabel sqlitePathLbl;
 	JFileChooser fileChooser;
@@ -118,7 +119,7 @@ public class Database extends WizardPanel implements ActionListener, FocusListen
 		dbTypes.add("mysql");
 		int selIndex = dbTypes.indexOf(dbType);
 		
-		dbTypeDropdown = new JComboBox(dbTypes);
+		dbTypeDropdown = new JComboBox<String>(dbTypes);
 		dbTypeDropdown.setSelectedIndex(selIndex);
 		dbTypeDropdown.addActionListener(this);		
 		c.gridy = 2;
@@ -134,7 +135,7 @@ public class Database extends WizardPanel implements ActionListener, FocusListen
 		panel.add(dbOptions, c);
 		
 		// add final text to layout
-		JLabel continueText = new JLabel("<html>When you are done, click 'finish' to start AutoDJ.</html>");
+		JLabel continueText = new JLabel("<html>When you are done, click '"+Wizard.FINISH_TEXT+"' to start AutoDJ.</html>");
 		c.gridx = 1;
 		c.gridy = 4;
 		c.gridwidth = 4;

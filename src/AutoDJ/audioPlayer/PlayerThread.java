@@ -21,6 +21,7 @@
 package AutoDJ.audioPlayer;
 
 import AutoDJ.*;
+import AutoDJ.prefs.Settings;
 import java.io.*;
 
 /**
@@ -34,7 +35,8 @@ public class PlayerThread extends Thread {
     PrintStream mplayerIn;
     BufferedReader mplayerOutErr;
     Process mplayerProcess;
-    
+    boolean playing = false;
+    final File mplayerPath = new File(Settings.get("mplayerPath"));
     
     /**
      *  initialize connection to mplayer via buffers and stdin/stdout
@@ -42,7 +44,11 @@ public class PlayerThread extends Thread {
     public PlayerThread() {
 	
 	try {
-	    mplayerProcess = Runtime.getRuntime().exec("/usr/bin/mplayer -slave -quiet -idle");
+		if (!mplayerPath.exists()) 
+			throw new Exception("MPlayer not found at "+mplayerPath.getCanonicalPath()+"!");
+		System.out.println(mplayerPath.getCanonicalPath());
+		
+	    mplayerProcess = Runtime.getRuntime().exec(mplayerPath.getPath()+" -slave -quiet -idle");
 	    
 	    // create the piped streams where to redirect the standard output and error of MPlayer
 	    // specify a bigger pipesize than the default of 1024

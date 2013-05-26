@@ -42,6 +42,10 @@ public class ObserverMessage {
 	 */
 	public static final int PAUSE = 2;
 	/**
+	 * The integer value representing "play next song"
+	 */
+	public static final int NEXT_SONG = 9;
+	/**
 	 * The integer value representing "rescan the harddisk for
 	 * changed MP3 files and update the database accordingly"
 	 */
