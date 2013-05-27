@@ -80,6 +80,12 @@ public class ObserverMessage {
 	 * playlist: A song was moved down.
 	 */
 	public static final int MOVE_SONG_DOWN_IN_PLAYLIST = 8;
+	
+	/**
+	 * The integer value representing a change in the
+	 * playlist: A song was added, determined by statistical model.
+	 */
+	protected static final int ADD_RANDOM_SONG_TO_PLAYLIST = 9;
 
 	
 	/**
@@ -99,6 +105,8 @@ public class ObserverMessage {
 	 * playlist.
 	 */
 	public static final int PLAYLIST_CHANGED = 103;
+	public static final int PLAYBACK_ENABLED = 104;
+	public static final int PLAYBACK_DISABLED = 104;
 	
 	/**
 	 * The integer value which stores the message.

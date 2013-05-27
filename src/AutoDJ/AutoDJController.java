@@ -21,11 +21,9 @@
 package AutoDJ;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 
 import org.apache.commons.io.FileUtils;
 
-import java.security.NoSuchAlgorithmException;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Observable;

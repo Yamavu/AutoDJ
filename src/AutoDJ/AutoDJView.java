@@ -43,7 +43,6 @@ import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
-import javax.swing.JToggleButton;
 import javax.swing.ListSelectionModel;
 import javax.swing.border.EtchedBorder;
 
@@ -79,6 +78,13 @@ public class AutoDJView extends Observable implements Observer {
 			 * A SongJList displaying the current library search results.
 			 */
 			private JList<Song> libraryList;
+			
+			/**
+			 * A JButton for the PLAY/PAUSE Button
+			 */
+			private JButton playButton;
+			private boolean playing = false;
+			
 	
 		/**
 		 * The second panel which displays the cover art, if available.
@@ -128,6 +134,13 @@ public class AutoDJView extends Observable implements Observer {
 		gui.add(playerPanel, BorderLayout.PAGE_END);
     }
 	
+	private ImageIcon imageIcon(String relPath){
+		//exchange if compiling a Runnable JAR
+		
+		return new ImageIcon(relPath);
+		//return new ImageIcon(getClass().getResource(relPath));
+	}
+	
     /**
 	 * Creates the player panel containing the play/pause-button, the next-song-button
 	 * and a progress bar.
@@ -137,7 +150,8 @@ public class AutoDJView extends Observable implements Observer {
 		playerPanel.setLayout(new GridBagLayout());
 		GridBagConstraints c = new GridBagConstraints();
 		
-		JToggleButton playButton = new JToggleButton(new ImageIcon("img/media-playback-start.png"));
+		playButton = new JButton(imageIcon("img/media-playback-start.png"));
+		playButton.setEnabled(false);
 		c.fill=GridBagConstraints.NONE;
 		c.weightx=0.0;
 		c.ipadx=10;
@@ -146,7 +160,16 @@ public class AutoDJView extends Observable implements Observer {
 		c.gridy=0;
 		playButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				notifyObservers(new ObserverMessage(ObserverMessage.PLAY));
+				if (!playing){
+					notifyObservers(new ObserverMessage(ObserverMessage.PLAY));
+					playButton.setIcon(imageIcon("img/media-playback-pause.png"));
+					playing=true;
+				}
+				else{
+					notifyObservers(new ObserverMessage(ObserverMessage.PAUSE));
+					playButton.setIcon(imageIcon("img/media-playback-start.png"));
+					playing=false;
+				}
 			}
 		});
 		playerPanel.add(playButton, c);
@@ -160,7 +183,7 @@ public class AutoDJView extends Observable implements Observer {
 		c.gridy=0;
 		playerPanel.add(progressBar, c);
 		
-		JButton nextSongButton = new JButton(new ImageIcon("img/media-seek-forward.png"));
+		JButton nextSongButton = new JButton(imageIcon("img/media-seek-forward.png"));
 		c.fill=GridBagConstraints.NONE;
 		c.weightx=0.0;
 		c.ipadx=10;
@@ -207,28 +230,35 @@ public class AutoDJView extends Observable implements Observer {
 		// buttons arranged in a gridbag-layout
 		playListControlPanel.setLayout(new GridBagLayout());
 		GridBagConstraints controlConstraints = new GridBagConstraints();
-		JButton addButton = new JButton(new ImageIcon("img/go-previous.png"));
+		JButton addButton = new JButton(imageIcon("img/go-previous.png"));
 		addButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				setChanged();
 				notifyObservers(new ObserverMessage(ObserverMessage.ADD_SONG_TO_PLAYLIST));
 			}
 		});
-		JButton removeButton = new JButton(new ImageIcon("img/go-next.png"));
+		JButton addAnyButton = new JButton(imageIcon("img/zoom-in.png"));
+		addAnyButton.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				setChanged();
+				notifyObservers(new ObserverMessage(ObserverMessage.ADD_RANDOM_SONG_TO_PLAYLIST));
+			}
+		});
+		JButton removeButton = new JButton(imageIcon("img/go-next.png"));
 		removeButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				setChanged();
 				notifyObservers(new ObserverMessage(ObserverMessage.REMOVE_SONG_FROM_PLAYLIST));
 			}
 		});
-		JButton downButton = new JButton(new ImageIcon("img/go-down.png"));
+		JButton downButton = new JButton(imageIcon("img/go-down.png"));
 		downButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				setChanged();
 				notifyObservers(new ObserverMessage(ObserverMessage.MOVE_SONG_DOWN_IN_PLAYLIST));
 			}
 		});
-		JButton upButton = new JButton(new ImageIcon("img/go-up.png"));
+		JButton upButton = new JButton(imageIcon("img/go-up.png"));
 		upButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				setChanged();
@@ -241,6 +271,8 @@ public class AutoDJView extends Observable implements Observer {
 		controlConstraints.gridx = 0;
 		controlConstraints.gridy = 1;
 		playListControlPanel.add(addButton, controlConstraints);
+		controlConstraints.gridx = 1;
+		playListControlPanel.add(addAnyButton, controlConstraints);
 		controlConstraints.gridx = 2;
 		playListControlPanel.add(removeButton, controlConstraints);
 		controlConstraints.gridx = 1;
@@ -292,7 +324,7 @@ public class AutoDJView extends Observable implements Observer {
 		GridBagConstraints constr = new GridBagConstraints();
 		
 		imagePanel.setBackground(Color.BLACK);
-		ImageIcon cover = new ImageIcon("/home/christian/Development/AutoDJ/img/Judas_priest_painkiller.jpg");
+		ImageIcon cover = imageIcon("/img/Judas_priest_painkiller.jpg");
 		JLabel coverLabel = new JLabel();
 		coverLabel.setIcon(cover); 
 		imagePanel.add(coverLabel, constr);
@@ -453,7 +485,19 @@ public class AutoDJView extends Observable implements Observer {
 			} else if (message.getMessage()==ObserverMessage.PLAYLIST_CHANGED) {
 				// display new content
 				playlistList.setListData(((AutoDJModel) model).getPlaylist());
-			}
+			} else if (message.getMessage()==ObserverMessage.PLAYBACK_ENABLED) {
+				// display new content
+				playButton.setEnabled(true);
+			} else if (message.getMessage()==ObserverMessage.PLAYBACK_DISABLED) {
+				// display new content
+				playButton.setEnabled(false);
+			} else if (message.getMessage()==ObserverMessage.PLAY) {
+				// change displayed symbol
+				playButton.setIcon(imageIcon("img/media-playback-pause.png"));
+			} else if (message.getMessage()==ObserverMessage.PAUSE) {
+				// change displayed symbol
+				playButton.setIcon(imageIcon("img/media-playback-start.png"));
+			} 
 		}
 	}
 }
