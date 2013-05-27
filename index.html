@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+    <meta charset='utf-8' />
+    <meta http-equiv="X-UA-Compatible" content="chrome=1" />
+    <meta name="description" content="AutoDJ : automatic playlist-generating and learning player" />
+
+    <link rel="stylesheet" type="text/css" media="screen" href="stylesheets/stylesheet.css">
+
+    <title>AutoDJ</title>
+  </head>
+
+  <body>
+
+    <!-- HEADER -->
+    <div id="header_wrap" class="outer">
+        <header class="inner">
+          <a id="forkme_banner" href="https://github.com/Yamavu/AutoDJ">View on GitHub</a>
+
+          <h1 id="project_title">AutoDJ</h1>
+          <h2 id="project_tagline">automatic playlist-generating and learning player</h2>
+
+            <section id="downloads">
+              <a class="zip_download_link" href="https://github.com/Yamavu/AutoDJ/zipball/master">Download this project as a .zip file</a>
+              <a class="tar_download_link" href="https://github.com/Yamavu/AutoDJ/tarball/master">Download this project as a tar.gz file</a>
+            </section>
+        </header>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div id="main_content_wrap" class="outer">
+      <section id="main_content" class="inner">
+        <p>AutoDJ is a program to play MP3 and OGG audio files. It remembers which files users played in what order and how often and saves this information to a MySQL database. Because of this the database not only stores the available MP3 files, but also in which combinations they can be played. You could call this a <strong>dynamic playlist</strong>.</p>
+
+<p>Later it uses this information to automatically determine which file to play after the current file without any user interference. Given enough information it behaves like a DJ, hence the name.</p>
+
+<p>AutoDJ is written in Java and depends on a MySQL or SQLite database. It uses the jaudiotagger library for extracting ID3-tags from MP3 files. jaudiotagger is released under the LGPL and can be downloaded <a href="http://www.jthink.net/jaudiotagger/">here</a>. For playback AutoDJ uses <a href="http://www.mplayerhq.hu">MPlayer</a> in <code>-slave</code> mode. It also uses the Apache Commons <a href="http://commons.apache.org/proper/commons-codec/">Codec</a> and <a href="http://commons.apache.org/proper/commons-io/">IO</a>, which are released under <a href="http://www.apache.org/licenses/LICENSE-2.0.html">Apache License, Version 2.0</a> and included for your convenience.</p>
+
+<p>AutoDJ is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either <a href="http://www.gnu.org/licenses/gpl-3.0.en.html">version 3 of the License</a>, or (at your option) any later version. </p>
+
+<p>AutoDJ is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more details.</p>
+
+<h2>Contributors</h2>
+
+<ul>
+<li><a href="https://github.com/Eris42">Eris42</a></li>
+<li><a href="https://github.com/Raven24">Raven24</a></li>
+<li><a href="https://github.com/Yamavu">Yamavu</a></li>
+</ul>
+      </section>
+    </div>
+
+    <!-- FOOTER  -->
+    <div id="footer_wrap" class="outer">
+      <footer class="inner">
+        <p class="copyright">AutoDJ maintained by <a href="https://github.com/Yamavu">Yamavu</a></p>
+        <p>Published with <a href="http://pages.github.com">GitHub Pages</a></p>
+      </footer>
+    </div>
+
+    
+
+  </body>
+</html>
