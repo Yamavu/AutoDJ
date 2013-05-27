@@ -32,7 +32,7 @@ import javax.swing.ListCellRenderer;
  * view in JLists in AutoDJView.
  * @see AutoDJView
  */
-
+// TODO: max Size in case of huge databases (ending with "and many more ... ")
 @SuppressWarnings("serial")
 public class SongListRenderer extends JLabel implements ListCellRenderer<Song> {
 	
