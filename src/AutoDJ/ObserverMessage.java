@@ -85,7 +85,7 @@ public class ObserverMessage {
 	 * The integer value representing a change in the
 	 * playlist: A song was added, determined by statistical model.
 	 */
-	protected static final int ADD_RANDOM_SONG_TO_PLAYLIST = 9;
+	protected static final int ADD_RANDOM_SONG_TO_PLAYLIST = 10;
 
 	
 	/**

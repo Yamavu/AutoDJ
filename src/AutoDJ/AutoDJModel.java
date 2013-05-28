@@ -54,6 +54,8 @@ public class AutoDJModel extends Observable {
 	 */
 	private String logtext;
 	
+	private int currentlyPlayed = 0;
+	
 	/**
 	 * Creates a new AutoDJModel object.
 	 */
@@ -169,5 +171,34 @@ public class AutoDJModel extends Observable {
 		this.logtext = logtext;
 		setChanged();
 		notifyObservers(new ObserverMessage(ObserverMessage.NEW_LOG_MESSAGE));
+	}
+
+	public Song getCurrentSong() {
+		return getPlaylistSong(currentlyPlayed);
+	}
+	
+	public void resetPlaylistMarker(){
+		this.currentlyPlayed=0;
+	}
+
+	public Song getNextSong() {
+		currentlyPlayed++;
+		return getPlaylistSong(currentlyPlayed);
+	}
+	
+	public Song getPlaylistSong(int index){
+		try{
+			if (this.playlist.size()>index)
+				return this.playlist.get(index);
+			else {
+				resetPlaylistMarker();
+				return this.playlist.get(0);
+			}
+		}catch(IndexOutOfBoundsException e){
+			System.out.println("Tried playing an empty Playlist!");
+			return null;
+		}
+		
+		
 	}
 }

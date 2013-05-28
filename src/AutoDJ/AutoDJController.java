@@ -28,7 +28,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Observable;
 import java.util.Observer;
-import java.util.Vector;
+import java.util.Random;
 
 //import javax.activation.MimetypesFileTypeMap;
 
@@ -65,6 +65,9 @@ public class AutoDJController implements Observer {
 	 * @see PlayerThread
 	 */
 	private PlayerThread myPlayer = new PlayerThread();
+	
+	private Random random = new Random();
+	
 	
 	/**
 	 * Creates a new AutoDJController object which interacts with
@@ -304,41 +307,78 @@ public class AutoDJController implements Observer {
 	public void update(Observable view, Object msg) {
 		if (msg instanceof ObserverMessage) {
 			ObserverMessage message = (ObserverMessage) msg;
-			if (message.getMessage()==ObserverMessage.PLAY) {
-				myPlayer.loadSong(model.getPlaylist().firstElement());
-				System.out.println ("PLAY");
-			} else if (message.getMessage()==ObserverMessage.PAUSE) {
-				System.out.println ("PAUSE");
-			} else if (message.getMessage()==ObserverMessage.NEXT_SONG) {
-				System.out.println ("NEXTSONG");
-				myPlayer.stopPlayback();
-			} else if (message.getMessage()==ObserverMessage.RESCAN_LIBRARY) {
-				rescanDatabase2();
-			} else if (message.getMessage()==ObserverMessage.SEARCHTEXT_CHANGED) {
-				filterSongLibrary(((AutoDJView) view).getSearchText());
-			} else if (message.getMessage()==ObserverMessage.ADD_SONG_TO_PLAYLIST) {
-				List<Song> selectedSongs=((AutoDJView) view).getSelectedLibrarySongs();
-				Vector<Song> playlistSongs=model.getPlaylist();
-				for (Song selectedSong:selectedSongs) {
-					if (!playlistSongs.contains(selectedSong)) {
-						model.addToPlaylist(selectedSong);
+			int index;
+			List<Song> selectedSongs, playlistSongs;
+			switch (message.getMessage()){
+				case ObserverMessage.PLAY:
+					if (!myPlayer.getPlaying()){
+						model.resetPlaylistMarker();
+						myPlayer.loadSong(model.getCurrentSong());
+						System.out.println ("PLAY: "+ model.getCurrentSong().getFile().getName());
+					}else{
+						// TODO: if Playlist empty: myplayer.playing = false;
+						myPlayer.pausePlayback();
+						System.out.println ("PLAY (UNPAUSE)");
+					}
+					
+					break;
+				case ObserverMessage.PAUSE:
+					myPlayer.pausePlayback();
+					System.out.println ("PAUSE");
+					break;
+				case ObserverMessage.NEXT_SONG:
+					myPlayer.stopPlayback();
+					myPlayer.loadSong(model.getNextSong());
+					System.out.println ("NEXTSONG");
+					break;
+				case ObserverMessage.RESCAN_LIBRARY:
+					rescanDatabase2();
+					System.out.println ("RESCAN");
+					break;
+				case ObserverMessage.SEARCHTEXT_CHANGED:
+					filterSongLibrary(((AutoDJView) view).getSearchText());
+					break;
+				case ObserverMessage.ADD_SONG_TO_PLAYLIST:
+					selectedSongs=((AutoDJView) view).getSelectedLibrarySongs();
+					playlistSongs=model.getPlaylist();
+					for (Song selectedSong:selectedSongs) {
+						if (!playlistSongs.contains(selectedSong)) {
+							model.addToPlaylist(selectedSong);
+						} else {
+							model.setLogtext("Song " + selectedSong.getArtist() +
+									" - " + selectedSong.getTitle() + " not added" +
+									" to playlist, because it already contains it.");
+						}
+					}
+					break;
+				case ObserverMessage.ADD_RANDOM_SONG_TO_PLAYLIST:
+					
+					selectedSongs=((AutoDJView) view).getLibrarySongs();
+					playlistSongs=model.getPlaylist();
+					System.out.print("ADD RANDOM SONG out of " + selectedSongs.size() + ": ");
+					Song randomSong = selectedSongs.get(random.nextInt(selectedSongs.size()));
+					if (!playlistSongs.contains(randomSong)) {
+						model.addToPlaylist(randomSong);
 					} else {
-						model.setLogtext("Song " + selectedSong.getArtist() +
-								" - " + selectedSong.getTitle() + " not added" +
+						model.setLogtext("Song " + randomSong.getArtist() +
+								" - " + randomSong.getTitle() + " not added" +
 								" to playlist, because it already contains it.");
 					}
-				}
-			} else if (message.getMessage()==ObserverMessage.REMOVE_SONG_FROM_PLAYLIST) {
-				model.removeFromPlaylist(((AutoDJView) view).getSelectedPlaylistSongs());
-			} else if (message.getMessage()==ObserverMessage.MOVE_SONG_DOWN_IN_PLAYLIST) {
-				int index = model.moveSongInPlaylist(((AutoDJView) view).getSelectedPlaylistIndex(), 1);
-				((AutoDJView) view).setSelectedPlaylistIndex(index);
-			} else if (message.getMessage()==ObserverMessage.MOVE_SONG_UP_IN_PLAYLIST) {
-				int index = model.moveSongInPlaylist(((AutoDJView) view).getSelectedPlaylistIndex(), -1);
-				((AutoDJView) view).setSelectedPlaylistIndex(index);
+					break;
+				case ObserverMessage.REMOVE_SONG_FROM_PLAYLIST:
+					model.removeFromPlaylist(((AutoDJView) view).getSelectedPlaylistSongs());
+					break;
+				case ObserverMessage.MOVE_SONG_DOWN_IN_PLAYLIST:
+					index = model.moveSongInPlaylist(((AutoDJView) view).getSelectedPlaylistIndex(), 1);
+					((AutoDJView) view).setSelectedPlaylistIndex(index);
+					break;
+				case ObserverMessage.MOVE_SONG_UP_IN_PLAYLIST:
+					index = model.moveSongInPlaylist(((AutoDJView) view).getSelectedPlaylistIndex(), -1);
+					((AutoDJView) view).setSelectedPlaylistIndex(index);
+					break;
+				default:
+					System.out.println ("Unknown Observer-Message caught!");
 			}
-		} else {
-			System.out.println ("Unknown Observer-Message caught!");
 		}
 	}
 }

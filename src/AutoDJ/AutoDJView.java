@@ -27,6 +27,7 @@ import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.AbstractList;
 import java.util.List;
 import java.util.Observable;
 import java.util.Observer;
@@ -43,6 +44,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
+import javax.swing.ListModel;
 import javax.swing.ListSelectionModel;
 import javax.swing.border.EtchedBorder;
 
@@ -84,6 +86,8 @@ public class AutoDJView extends Observable implements Observer {
 			 */
 			private JButton playButton;
 			private boolean playing = false;
+			
+			 
 			
 	
 		/**
@@ -161,11 +165,13 @@ public class AutoDJView extends Observable implements Observer {
 		playButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				if (!playing){
+					setChanged();
 					notifyObservers(new ObserverMessage(ObserverMessage.PLAY));
 					playButton.setIcon(imageIcon("img/media-playback-pause.png"));
 					playing=true;
 				}
 				else{
+					setChanged();
 					notifyObservers(new ObserverMessage(ObserverMessage.PAUSE));
 					playButton.setIcon(imageIcon("img/media-playback-start.png"));
 					playing=false;
@@ -190,8 +196,9 @@ public class AutoDJView extends Observable implements Observer {
 		c.insets=new Insets(10,10,10,10);
 		c.gridx=2;
 		c.gridy=0;
-		playButton.addActionListener(new ActionListener() {
+		nextSongButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
+				setChanged();
 				notifyObservers(new ObserverMessage(ObserverMessage.NEXT_SONG));
 			}
 		});
@@ -238,6 +245,7 @@ public class AutoDJView extends Observable implements Observer {
 			}
 		});
 		JButton addAnyButton = new JButton(imageIcon("img/zoom-in.png"));
+		addAnyButton.setToolTipText("Selecte a random song from the Library.");
 		addAnyButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				setChanged();
@@ -448,6 +456,26 @@ public class AutoDJView extends Observable implements Observer {
 		return libraryList.getSelectedValuesList();
 	}
 	
+	/**
+	 * Returns the current values of the library.
+	 * @return the current  values of the library.
+	 */
+	public List<Song> getLibrarySongs() {
+		return new AbstractList<Song>() {
+			ListModel<Song> filteredLibrarySongs = libraryList.getModel();
+	          @Override 
+	          public Song get(int index) {
+	        	  System.out.println("got "+index);
+	              return filteredLibrarySongs.getElementAt(index);
+	          }
+
+			@Override
+			public int size() {
+				return filteredLibrarySongs.getSize();
+			};
+		};
+	}
+	
 	
 	/*
 	 * Convert an Object-array to a Song-array
@@ -485,18 +513,8 @@ public class AutoDJView extends Observable implements Observer {
 			} else if (message.getMessage()==ObserverMessage.PLAYLIST_CHANGED) {
 				// display new content
 				playlistList.setListData(((AutoDJModel) model).getPlaylist());
-			} else if (message.getMessage()==ObserverMessage.PLAYBACK_ENABLED) {
-				// display new content
-				playButton.setEnabled(true);
-			} else if (message.getMessage()==ObserverMessage.PLAYBACK_DISABLED) {
-				// display new content
-				playButton.setEnabled(false);
-			} else if (message.getMessage()==ObserverMessage.PLAY) {
-				// change displayed symbol
-				playButton.setIcon(imageIcon("img/media-playback-pause.png"));
-			} else if (message.getMessage()==ObserverMessage.PAUSE) {
-				// change displayed symbol
-				playButton.setIcon(imageIcon("img/media-playback-start.png"));
+				if (playlistList.getModel().getSize()>0) playButton.setEnabled(true);
+				else playButton.setEnabled(false);
 			} 
 		}
 	}
