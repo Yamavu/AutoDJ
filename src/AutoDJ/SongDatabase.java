@@ -161,8 +161,8 @@ public class SongDatabase {
 				try {
 					cover = ImageIO.read(new ByteArrayInputStream(coverBlob));
 				} catch (IOException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
+					// TODO handle exception for errors reading Image from DB
+					System.err.println("Errors reading Image BLOB from ID:"+id+" in SongDatabase");
 				}
 				int year = rs.getInt("year");
 				String genre = rs.getString("genre");
@@ -203,7 +203,7 @@ public class SongDatabase {
 				try {
 					cover = ImageIO.read(new ByteArrayInputStream(coverBlob));
 				} catch (IOException e) {
-					// TODO Auto-generated catch block
+					// TODO Handle exception for reading images from DB
 					System.err.println("Exception while reading Cover Image for " + file_name.getName()+" ... continuing happily.");
 					//e.printStackTrace();
 				}
