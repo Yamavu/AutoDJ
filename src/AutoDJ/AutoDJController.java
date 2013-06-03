@@ -80,6 +80,7 @@ public class AutoDJController implements Observer {
 		
 		try{
 			myPlayer=new PlayerThread();
+			myPlayer.run();
 		} catch (IOException e) {
 			// TODO handle MPlayer Missing Exception in UI
 			System.out.println(e.getMessage());
