@@ -23,6 +23,8 @@ package AutoDJ.audioPlayer;
 import AutoDJ.*;
 import AutoDJ.prefs.Settings;
 import java.io.*;
+import java.util.List;
+import java.util.Observable;
 
 /**
  * Handle playback with MPlayer (http://www.mplayerhq.hu)
@@ -30,27 +32,32 @@ import java.io.*;
  * most of the code is from http://beradrian.wordpress.com/2008/01/30/jmplayer/
  * 
  */
-public class PlayerThread extends Thread {
-
+public class PlayerThread extends Thread{
+	
+	public Observable obs = new Observable();
 	private PrintStream mplayerIn;
 	private BufferedReader mplayerOutErr;
 	private Process mplayerProcess;
 	private boolean playing = false;
 	private boolean paused = false;
 	private final File mplayerPath = new File(Settings.get("mplayerPath"));
+	//private final File mplayerPath = new File("C:\\progs\\media\\MPlayer\\mplayer.exe");
 
-	// TODO: check if there's a good way to add a song just before the current
-	// one finishes of find other ways for MPlayer Playlist
+	// TODO: implement API closer to the specification to enhance capabilities
+	// like showing remaining time, playing consecutive songs and other features
+	// beyond calling MPlayer with single files
 
 	/**
 	 * initialize connection to mplayer via buffers and stdin/stdout
 	 */
-	public PlayerThread() {
+	public PlayerThread() throws IOException {
+		if (!mplayerPath.exists())
+			throw new IOException("MPlayer not found at \""
+					+ mplayerPath.getPath() + "\"!");
+	}
 
+	public void run() {
 		try {
-			if (!mplayerPath.exists())
-				throw new IOException("MPlayer not found at \""
-						+ mplayerPath.getPath() + "\"!");
 			mplayerProcess = Runtime.getRuntime().exec(
 					mplayerPath.getPath() + " -slave -idle"); // +-quiet
 
@@ -64,39 +71,55 @@ public class PlayerThread extends Thread {
 
 			// create the threads to redirect the standard output and error of
 			// MPlayer
-			new StreamRedirecter(mplayerProcess.getInputStream(), writeTo)
-					.start();
-			new StreamRedirecter(mplayerProcess.getErrorStream(), writeTo)
-					.start();
+			new StreamRedirecter(mplayerProcess.getInputStream(), writeTo).start();
+			new StreamRedirecter(mplayerProcess.getErrorStream(), writeTo).start();
 
 			// the standard input of MPlayer
 			mplayerIn = new PrintStream(mplayerProcess.getOutputStream());
-
-		} catch (Exception e) {
-			// TODO Auto-generated catch block
+		} catch (IOException e) {
 			e.printStackTrace();
 		}
+	}
+	
+	private void runCommand(String cmd){
+		mplayerIn.print(cmd+"\n\n");
+		mplayerIn.flush();
+	}
+	
+	
+	/**
+	 * claim an answer from the mplayer out-error-stream
+	 * use with caution, because it blocks this command thread if used wrong
+	 * if you're not sure use prefix=""
+	 */
+	private String getAnswer(String prefix){
+		String buff;
+		try {
+			while ((buff = mplayerOutErr.readLine()) != "") {
+				if (buff.startsWith(prefix))
+					return buff.substring(prefix.length());
+			}
+		} catch (IOException e) {
+			// TODO: more sophisticated error handling
+			e.printStackTrace();
+		}
+		return "";
 	}
 
 	/**
 	 * stop playback and quit mplayer
 	 */
 	public void kill() {
-		mplayerIn.print("quit");
-		mplayerIn.print("\n");
-		mplayerIn.flush();
+		runCommand("quit");
 		try {
 			mplayerProcess.waitFor();
 		} catch (InterruptedException e) {
 
 		}
-		interrupt();
 		mplayerProcess.destroy();
+		interrupt();
 	}
-
-	public void run() {
-		// IDLE
-	}
+	
 
 	/**
 	 * load a song and start playback
@@ -105,7 +128,7 @@ public class PlayerThread extends Thread {
 	 *            Song object to be loaded into player
 	 */
 	public void loadSong(Song s) {
-		loadSong(s, 0);
+		loadSong(s, -1);
 	}
 
 	/**
@@ -115,19 +138,21 @@ public class PlayerThread extends Thread {
 	 *            Song object to be loaded into player
 	 * @param position
 	 *            indicate position where the song is to be added; if 0 playback
-	 *            stops and starts with this song; avoid gaps plz
+	 *            stops and starts with this song; gaps in playlist are skipped automatically
 	 */
 	public void loadSong(Song s, int position) {
-		String command = "loadfile \"" + s.getFile().getAbsolutePath() + "\" "
-				+ position;
+		String command = "loadfile \"" + s.getFile().getAbsolutePath()+ "\" ";
+		if (position>0){
+			command += position;
+			playing = true;
+		}else {
+			command += "0";
+			playing = true;
+			paused = false;
+		}
 		if (command.contains("\\"))
 			command = command.replace("\\", "/"); // for Windows paths
-		playing = true;
-		paused = false;
-		mplayerIn.print(command);
-		mplayerIn.print("\n");
-		mplayerIn.flush();
-
+		runCommand(command);
 	}
 
 	/**
@@ -135,9 +160,7 @@ public class PlayerThread extends Thread {
 	 */
 	public void pausePlayback() {
 		paused = !paused;
-		mplayerIn.print("pause");
-		mplayerIn.print("\n");
-		mplayerIn.flush();
+		runCommand("pause");
 	}
 
 	/**
@@ -146,18 +169,14 @@ public class PlayerThread extends Thread {
 	public void stopPlayback() {
 		paused = false;
 		playing = false;
-		mplayerIn.print("stop");
-		mplayerIn.print("\n");
-		mplayerIn.flush();
+		runCommand("stop");
 	}
 
 	/**
 	 * toggle mute
 	 */
 	public void toggleMute() {
-		mplayerIn.print("mute");
-		mplayerIn.print("\n");
-		mplayerIn.flush();
+		runCommand("mute");
 	}
 
 	/**
@@ -165,25 +184,26 @@ public class PlayerThread extends Thread {
 	 */
 	public int getPlayingTime() {
 		// mplayerIn.print("get_property length");
-		mplayerIn.print("get_time_length");
-		mplayerIn.print("\n");
-		mplayerIn.flush();
-
-		String answer;
-		int totalTime = -1;
-		try {
-			String prefix = "ANS_length=";
-			while ((answer = mplayerOutErr.readLine()) != null) {
-				if (answer.startsWith(prefix)) {
-					totalTime = (int) Double.parseDouble(answer
-							.substring(prefix.length()));
-					break;
-				}
-			}
-		} catch (IOException e) {
+		runCommand("get_time_length");
+		runCommand("get_time_length");
+		double ans = Double.parseDouble(getAnswer("ANS_length="));
+		return (int) ans;
+	}
+	
+	/**
+	 * get the remaining playing time in percent as reported by mplayer
+	 */
+	public int getPlaylistPos(List<Song> songs){
+		String song = getCurrent();
+		for(int i = 0; i<songs.size();i++){
+			if (song==songs.get(i).getFile().getName())
+				return i;
 		}
-
-		return totalTime;
+		return -1;
+	}
+	
+	public void skipCurrent(){
+		runCommand("pt_step 0");
 	}
 
 	public boolean getPlaying() {
@@ -194,21 +214,28 @@ public class PlayerThread extends Thread {
 		return this.paused;
 	}
 
+	public String getCurrent() {
+		runCommand("get_file_name");
+		//runCommand("");
+		String filename = getAnswer("ANS_FILENAME=");
+		return filename.substring(1, filename.length()-1);
+	}
+
 	public static void main(String[] args) {
-		PlayerThread myPlayer = new PlayerThread();
 		try {
+			PlayerThread myPlayer = new PlayerThread();
+			myPlayer.run();
 			System.out.println("do");
 			File f = new File(
 					"D:\\filz\\audio\\soundtrack\\Digimon\\Digimon - Len - Kids In America.mp3");
 			// "D:/filz/audio/soundtrack/Digimon/Digimon - Len - Kids In America.mp3"
-			System.out.println(f.getName() + " exists: " + f.exists());
-			System.out.println(f.getAbsolutePath());
-			System.out.println(f.getAbsolutePath());
-			System.out.println(f.getCanonicalPath());
+			System.out.println("\""+f.getName() + "\" exists: " + f.exists());
 			System.out.println(f.getPath());
 			myPlayer.loadSong(new Song(f));
-			Thread.sleep(10000);
-			System.out.println(myPlayer.getPlayingTime());
+			Thread.sleep(1000);
+			Thread.sleep(1000);
+			Thread.sleep(1000);
+			System.out.println(myPlayer.getCurrent());
 			System.out.println("pause");
 			myPlayer.pausePlayback();
 			Thread.sleep(3000);
@@ -218,6 +245,7 @@ public class PlayerThread extends Thread {
 			System.out.println("stop");
 			myPlayer.stopPlayback();
 			myPlayer.kill();
+			//myPlayer.join();
 			myPlayer = null;
 			System.out.println("done");
 		} catch (Throwable e) {
