@@ -21,6 +21,7 @@
 package AutoDJ;
 
 import java.io.File;
+import java.io.IOException;
 
 import org.apache.commons.io.FileUtils;
 
@@ -64,7 +65,7 @@ public class AutoDJController implements Observer {
 	 * The Wrapper around MPlayer. All Songs are played through this
 	 * @see PlayerThread
 	 */
-	private PlayerThread myPlayer = new PlayerThread();
+	private PlayerThread myPlayer;
 	
 	private Random random = new Random();
 	
@@ -76,6 +77,13 @@ public class AutoDJController implements Observer {
 	 * interact with.
 	 */
 	public AutoDJController (AutoDJModel m) {
+		
+		try{
+			myPlayer=new PlayerThread();
+		} catch (IOException e) {
+			// TODO handle MPlayer Missing Exception in UI
+			System.out.println(e.getMessage());
+		}
 		
 		// if this is the first time the user opens this application
 		// show a short wizard that asks for the most important settings
@@ -140,7 +148,7 @@ public class AutoDJController implements Observer {
 		try {
 			Class.forName("org.sqlite.JDBC").newInstance();
 		} catch (Exception e) {
-			System.out.println(e.getMessage());
+			System.out.println("SQLite not found: "+ e.getMessage());
 		}
 		
 		String dbPath = Settings.get("dbPath");
