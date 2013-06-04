@@ -316,7 +316,7 @@ public class AutoDJController implements Observer {
 	public void update(Observable view, Object msg) {
 		if (msg instanceof ObserverMessage) {
 			ObserverMessage message = (ObserverMessage) msg;
-			int index;
+			//int index;
 			List<Song> selectedSongs, playlistSongs;
 			switch (message.getMessage()){
 				case ObserverMessage.PLAY:
@@ -377,14 +377,14 @@ public class AutoDJController implements Observer {
 				case ObserverMessage.REMOVE_SONG_FROM_PLAYLIST:
 					model.removeFromPlaylist(((AutoDJView) view).getSelectedPlaylistSongs());
 					break;
-				case ObserverMessage.MOVE_SONG_DOWN_IN_PLAYLIST:
+				/*case ObserverMessage.MOVE_SONG_DOWN_IN_PLAYLIST:
 					index = model.moveSongInPlaylist(((AutoDJView) view).getSelectedPlaylistIndex(), 1);
 					((AutoDJView) view).setSelectedPlaylistIndex(index);
 					break;
 				case ObserverMessage.MOVE_SONG_UP_IN_PLAYLIST:
 					index = model.moveSongInPlaylist(((AutoDJView) view).getSelectedPlaylistIndex(), -1);
 					((AutoDJView) view).setSelectedPlaylistIndex(index);
-					break;
+					break;*/
 				default:
 					System.out.println ("Unknown Observer-Message caught!");
 			}

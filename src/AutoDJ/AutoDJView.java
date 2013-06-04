@@ -259,7 +259,7 @@ public class AutoDJView extends Observable implements Observer {
 				notifyObservers(new ObserverMessage(ObserverMessage.REMOVE_SONG_FROM_PLAYLIST));
 			}
 		});
-		JButton downButton = new JButton(imageIcon("img/go-down.png"));
+		/*JButton downButton = new JButton(imageIcon("img/go-down.png"));
 		downButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				setChanged();
@@ -272,10 +272,10 @@ public class AutoDJView extends Observable implements Observer {
 				setChanged();
 				notifyObservers(new ObserverMessage(ObserverMessage.MOVE_SONG_UP_IN_PLAYLIST));
 			}
-		});
+		});*/
 		controlConstraints.gridx = 1;
 		controlConstraints.gridy = 0;
-		playListControlPanel.add(upButton, controlConstraints);
+		//playListControlPanel.add(upButton, controlConstraints);
 		controlConstraints.gridx = 0;
 		controlConstraints.gridy = 1;
 		playListControlPanel.add(addButton, controlConstraints);
@@ -285,7 +285,7 @@ public class AutoDJView extends Observable implements Observer {
 		playListControlPanel.add(removeButton, controlConstraints);
 		controlConstraints.gridx = 1;
 		controlConstraints.gridy = 2;
-		playListControlPanel.add(downButton, controlConstraints);
+		//playListControlPanel.add(downButton, controlConstraints);
 		GridBagConstraints centerConstraints = new GridBagConstraints();
 		centerConstraints.gridx = 1;
 		centerConstraints.gridy = 1;

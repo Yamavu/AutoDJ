@@ -73,13 +73,13 @@ public class ObserverMessage {
 	 * The integer value representing a change in the
 	 * playlist: A song was moved up.
 	 */
-	public static final int MOVE_SONG_UP_IN_PLAYLIST = 7;
+	//public static final int MOVE_SONG_UP_IN_PLAYLIST = 7;
 	
 	/**
 	 * The integer value representing a change in the
 	 * playlist: A song was moved down.
 	 */
-	public static final int MOVE_SONG_DOWN_IN_PLAYLIST = 8;
+	//public static final int MOVE_SONG_DOWN_IN_PLAYLIST = 8;
 	
 	/**
 	 * The integer value representing a change in the
